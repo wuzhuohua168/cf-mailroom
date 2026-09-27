@@ -1,7 +1,7 @@
 import { generateText } from "ai";
 import { createWorkersAI } from "workers-ai-provider";
 
-const MODEL = "xai/grok-4.6";
+const MODEL = "@cf/zai-org/glm-4.7-flash";
 const MAX_CONTEXT_MESSAGES = 12;
 const MAX_MESSAGE_CHARS = 24_000;
 
