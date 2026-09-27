@@ -31,12 +31,6 @@
       "migrations_dir": "migrations"
     }
   ],
-  "r2_buckets": [
-    {
-      "binding": "RAW",
-      "bucket_name": "mailroom-raw"
-    }
-  ],
   "queues": {
     "producers": [
       {
