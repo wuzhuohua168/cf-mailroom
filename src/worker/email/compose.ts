@@ -17,7 +17,7 @@ import { claimDailySendBudget } from "./send-budget.ts";
 
 export interface ComposeEnv extends SendEmailEnv {
   DB: D1Database;
-  RAW: R2Bucket;
+  RAW?: R2Bucket;
 }
 
 export interface ComposeIntent {
@@ -85,6 +85,13 @@ export async function sendNewEmailAttempt(
   if (!inbox) throw new ComposeIntentError("Inbox not found", 404);
   if (inbox.domain_status !== "active") {
     throw new ComposeIntentError("Inbox domain is not ready for outbound sending", 409);
+  }
+
+  if (attachments.length > 0 && !env.RAW) {
+    throw new ComposeIntentError(
+      "Attachments require the RAW R2 binding, which is not configured on this instance",
+      400,
+    );
   }
 
   let staged: StagedAttachment[] = existing
