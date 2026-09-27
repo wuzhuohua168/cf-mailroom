@@ -42,10 +42,14 @@ export async function receiveEmail(
     return;
   }
 
-  const rawKey = `raw/${mailbox.id}/${fingerprint}.eml`;
-  await env.RAW.put(rawKey, rawBuffer, {
-    httpMetadata: { contentType: "message/rfc822" },
-  });
+  // R2 is optional: instances without the RAW binding skip retaining the
+  // original MIME (raw_key stays NULL; nothing reads it back).
+  const rawKey = env.RAW ? `raw/${mailbox.id}/${fingerprint}.eml` : null;
+  if (env.RAW && rawKey) {
+    await env.RAW.put(rawKey, rawBuffer, {
+      httpMetadata: { contentType: "message/rfc822" },
+    });
+  }
 
   const subject = parsed.subject ?? "";
   const textBody = parsed.text ?? htmlToText(parsed.html ?? "");
@@ -220,7 +224,7 @@ interface StoredMessageInput {
   parsed: Email;
   subject: string;
   textBody: string;
-  rawKey: string;
+  rawKey: string | null;
   now: string;
 }
 
@@ -259,6 +263,9 @@ async function storeAttachments(
   attachments: Attachment[],
 ): Promise<void> {
   if (attachments.length === 0) return;
+  // Without the RAW R2 binding attachments are not retained at all (their
+  // metadata rows are skipped too, since r2_key is NOT NULL).
+  if (!env.RAW) return;
   const statements: D1PreparedStatement[] = [];
 
   for (const [index, attachment] of attachments.entries()) {
