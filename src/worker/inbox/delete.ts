@@ -1,6 +1,6 @@
 export interface InboxDeletionEnv {
   DB: D1Database;
-  RAW: R2Bucket;
+  RAW?: R2Bucket;
 }
 
 export interface DeletedInbox {
@@ -94,7 +94,8 @@ export async function deleteInbox(
   return { id: inbox.id, address: inbox.address, domainId: inbox.domain_id };
 }
 
-export async function purgeInboxObjects(bucket: R2Bucket, inboxId: number): Promise<void> {
+export async function purgeInboxObjects(bucket: R2Bucket | undefined, inboxId: number): Promise<void> {
+  if (!bucket) return;
   await Promise.all([
     purgePrefix(bucket, `raw/${inboxId}/`),
     purgePrefix(bucket, `attachments/${inboxId}/`),
