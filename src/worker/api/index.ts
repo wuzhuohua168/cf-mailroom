@@ -248,14 +248,16 @@ api.delete("/mailboxes/:id", async (c) => {
       id,
       confirmAddress: body.confirm_address,
     });
-    c.executionCtx.waitUntil(
-      purgeInboxObjects(c.env.RAW, deleted.id).catch((error) => {
-        console.error("Inbox object cleanup failed", {
-          inboxId: deleted.id,
-          error,
-        });
-      }),
-    );
+    if (c.env.RAW) {
+      c.executionCtx.waitUntil(
+        purgeInboxObjects(c.env.RAW, deleted.id).catch((error) => {
+          console.error("Inbox object cleanup failed", {
+            inboxId: deleted.id,
+            error,
+          });
+        }),
+      );
+    }
     return c.json({
       ok: true,
       deleted_id: deleted.id,
@@ -615,6 +617,9 @@ api.get("/attachments/:id", async (c) => {
     .bind(id)
     .first<{ filename: string | null; content_type: string; size: number; r2_key: string }>();
   if (!attachment) return c.json({ error: "Attachment not found" }, 404);
+  if (!c.env.RAW) {
+    return c.json({ error: "Attachment storage is not enabled on this instance" }, 404);
+  }
   const object = await c.env.RAW.get(attachment.r2_key);
   if (!object) return c.json({ error: "Attachment file is unavailable" }, 404);
 
