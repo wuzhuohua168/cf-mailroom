@@ -5,7 +5,10 @@
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  // Publish the workers.dev hostname and put Cloudflare Access on this Worker.
+  // Publish the workers.dev hostname. The worker itself enforces the
+  // password gate (UI_PASSWORD secret) on every request, including static
+  // assets — this instance cannot use Cloudflare Access (Zero Trust Free
+  // requires billing info).
   // Preview URLs are separate hostnames, so keep them off.
   "workers_dev": true,
   "preview_urls": false,
@@ -14,16 +17,10 @@
   "keep_vars": true,
   "assets": {
     "not_found_handling": "single-page-application",
-    // /mcp (including /mcp/oauth/*) and /.well-known/* serve MCP and OAuth;
-    // /authorize is owner consent.
-    "run_worker_first": [
-      "/api/*",
-      "/mcp",
-      "/mcp/*",
-      "/.well-known/*",
-      "/authorize",
-      "/cdn-cgi/handler/email"
-    ]
+    // Route everything through the worker first so the password gate also
+    // covers the SPA shell and static assets (upstream only listed API/MCP
+    // paths because it relied on Cloudflare Access at the edge).
+    "run_worker_first": ["/*"]
   },
   "d1_databases": [
     {
@@ -48,13 +45,6 @@
     {
       // Sender domains must be onboarded to Email Service (dashboard > Email Service).
       "name": "EMAIL"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "RAW",
-      // Create with: wrangler r2 bucket create mailroom-raw
-      "bucket_name": "mailroom-raw"
     }
   ],
   "queues": {
