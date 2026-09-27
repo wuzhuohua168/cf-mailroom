@@ -20,10 +20,17 @@ interface Env {
   WEB_ACCESS_TEAM_DOMAIN?: string;
   WEB_ACCESS_AUD?: string;
   DB: D1Database;
-  RAW: R2Bucket;
+  // Optional: without the RAW binding the worker skips retaining original
+  // MIME and attachments (free-tier instances without R2).
+  RAW?: R2Bucket;
   EMAIL: OutboundEmailBinding;
   AI: Ai;
   DRAFT_QUEUE: Queue<{ runId: number }>;
+  // Workers Static Assets binding (implicit when `assets` is configured).
+  ASSETS: Fetcher;
+  // Password gate secret (free-tier replacement for Cloudflare Access).
+  // When unset, the worker stays open so a fresh deploy never locks you out.
+  UI_PASSWORD?: string;
   OAUTH_KV: KVNamespace;
   MCP_SEND_ENABLED?: string;
   MCP_DAILY_SEND_LIMIT?: string;
