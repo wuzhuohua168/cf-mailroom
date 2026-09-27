@@ -102,11 +102,15 @@ export function parseStagedAttachments(raw: string | null | undefined): StagedAt
 }
 
 export async function stageAttachments(
-  bucket: R2Bucket,
+  bucket: R2Bucket | undefined,
   mailboxId: number,
   attemptId: string,
   attachments: ReadonlyArray<NormalizedAttachment>,
 ): Promise<StagedAttachment[]> {
+  if (attachments.length === 0) return [];
+  if (!bucket) {
+    throw new Error("Staging attachments requires the RAW R2 binding");
+  }
   const staged: StagedAttachment[] = [];
   for (const [index, attachment] of attachments.entries()) {
     const r2Key = `attachments/${mailboxId}/outbound/${attemptId}/${index}-${crypto.randomUUID()}`;
