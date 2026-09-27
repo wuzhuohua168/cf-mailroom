@@ -16,6 +16,10 @@
   // Worker Settings > Variables and Secrets. Missing values deny all API access.
   "keep_vars": true,
   "assets": {
+    // Expose static assets as env.ASSETS so the worker can serve the SPA
+    // itself after the password gate (required; without it env.ASSETS is
+    // undefined and every non-API request 500s).
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application",
     // Route everything through the worker first so the password gate also
     // covers the SPA shell and static assets (upstream only listed API/MCP
