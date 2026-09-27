@@ -15,7 +15,7 @@ import { claimDailySendBudget } from "./send-budget.ts";
 
 export interface ReplyEnv extends SendEmailEnv {
   DB: D1Database;
-  RAW: R2Bucket;
+  RAW?: R2Bucket;
 }
 
 export interface ReplyIntent {
@@ -123,6 +123,13 @@ export async function sendReplyAttempt(
     throw new ReplyIntentError(
       "Reply recipient changed after it was reviewed; read the Conversation again",
       409,
+    );
+  }
+
+  if (attachments.length > 0 && !env.RAW) {
+    throw new ReplyIntentError(
+      "Attachments require the RAW R2 binding, which is not configured on this instance",
+      400,
     );
   }
 
