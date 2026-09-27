@@ -20,7 +20,7 @@ import type { McpIdentity } from "./auth-types.ts";
 
 export interface McpEnv extends InboxDataEnv, SendEmailEnv {
   MCP_DAILY_SEND_LIMIT?: string;
-  RAW: R2Bucket;
+  RAW?: R2Bucket;
 }
 
 const inboxSchema = z.object({
